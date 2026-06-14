@@ -1,0 +1,503 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Hide scrollbar on header */
+header::-webkit-scrollbar {
+  display: none;
+}
+
+:root {
+  --verde-musgo: #2D4A3E;
+  --arcilla: #C4622D;
+  --crema: #F5F0E8;
+  --carbon: #1A1A1A;
+  --bg-primary: #F5F0E8;
+  --bg-secondary: #FFFFFF;
+  --bg-elevated: #FFFFFF;
+  --text-primary: #1A1A1A;
+  --text-secondary: rgba(26, 26, 26, 0.7);
+  --text-muted: rgba(26, 26, 26, 0.4);
+  --border-color: rgba(45, 74, 62, 0.15);
+  --card-bg: #FFFFFF;
+  --input-bg: #FFFFFF;
+  --hover-bg: rgba(45, 74, 62, 0.05);
+}
+
+.dark {
+  --bg-primary: #0F1419;
+  --bg-secondary: #1A2332;
+  --bg-elevated: #1E2A3A;
+  --text-primary: #E8ECF1;
+  --text-secondary: rgba(232, 236, 241, 0.7);
+  --text-muted: rgba(232, 236, 241, 0.4);
+  --border-color: rgba(232, 236, 241, 0.12);
+  --card-bg: #1A2332;
+  --input-bg: #1E2A3A;
+  --hover-bg: rgba(232, 236, 241, 0.05);
+  --crema: #0F1419;
+  --carbon: #E8ECF1;
+  --accent-primary: #4A90D9;
+  --terminal-prompt: none;
+}
+
+/* ─── Terminal Theme ─────────────────────────────────────── */
+.theme-terminal {
+  --bg-primary: #050a05;
+  --bg-secondary: #080f08;
+  --bg-elevated: #0c150c;
+  --text-primary: #39ff14;
+  --text-secondary: rgba(57, 255, 20, 0.72);
+  --text-muted: rgba(57, 255, 20, 0.38);
+  --border-color: rgba(57, 255, 20, 0.14);
+  --card-bg: #080f08;
+  --input-bg: #050a05;
+  --hover-bg: rgba(57, 255, 20, 0.06);
+  --crema: #050a05;
+  --carbon: #39ff14;
+  --accent-primary: #39ff14;
+  --terminal-prompt: '"[🐙]$ "';
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Courier New', monospace !important;
+}
+
+.theme-terminal body,
+.theme-terminal * {
+  font-family: 'JetBrains Mono', 'Fira Code', ui-monospace, 'Courier New', monospace !important;
+  letter-spacing: 0.01em;
+}
+
+/* scanline overlay */
+.theme-terminal .terminal-scanlines::after {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to bottom,
+    transparent 0px,
+    transparent 2px,
+    rgba(0, 0, 0, 0.08) 2px,
+    rgba(0, 0, 0, 0.08) 4px
+  );
+  pointer-events: none;
+  z-index: 9999;
+}
+
+/* ─── Ocean Theme ────────────────────────────────────────── */
+.theme-ocean {
+  --bg-primary: #040c17;
+  --bg-secondary: #071526;
+  --bg-elevated: #0b1d34;
+  --text-primary: #a8ccef;
+  --text-secondary: rgba(168, 204, 239, 0.72);
+  --text-muted: rgba(168, 204, 239, 0.38);
+  --border-color: rgba(74, 144, 217, 0.18);
+  --card-bg: #071526;
+  --input-bg: #0b1d34;
+  --hover-bg: rgba(74, 144, 217, 0.07);
+  --crema: #040c17;
+  --carbon: #a8ccef;
+  --accent-primary: #4A90D9;
+  --terminal-prompt: none;
+}
+
+/* ─── Hermes Theme ───────────────────────────────────────── */
+.theme-hermes {
+  --bg-primary: #100c04;
+  --bg-secondary: #1a1408;
+  --bg-elevated: #231c0d;
+  --text-primary: #e8c97a;
+  --text-secondary: rgba(232, 201, 122, 0.72);
+  --text-muted: rgba(232, 201, 122, 0.38);
+  --border-color: rgba(196, 98, 45, 0.22);
+  --card-bg: #1a1408;
+  --input-bg: #231c0d;
+  --hover-bg: rgba(196, 98, 45, 0.07);
+  --crema: #100c04;
+  --carbon: #e8c97a;
+  --accent-primary: #C4622D;
+  --terminal-prompt: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  min-height: 100vh;
+  transition: background-color 0.5s ease, color 0.5s ease;
+}
+
+/* Hide hydration errors */
+[data-hydration-error] {
+  display: none !important;
+}
+
+/* ============================================ */
+/* Landing Page — Floating Orb Animations      */
+/* ============================================ */
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0) translateX(0) scale(1); }
+  25% { transform: translateY(-30px) translateX(10px) scale(1.05); }
+  50% { transform: translateY(-15px) translateX(-8px) scale(0.98); }
+  75% { transform: translateY(-40px) translateX(15px) scale(1.02); }
+}
+@keyframes float-medium {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  33% { transform: translateY(-25px) translateX(-15px); }
+  66% { transform: translateY(10px) translateX(12px); }
+}
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; filter: blur(80px); }
+  50% { opacity: 0.7; filter: blur(100px); }
+}
+@keyframes float-rotate {
+  0% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-20px) rotate(180deg); }
+  100% { transform: translateY(0) rotate(360deg); }
+}
+.animate-float-slow { animation: float-slow 12s ease-in-out infinite; }
+.animate-float-medium { animation: float-medium 8s ease-in-out infinite; }
+.animate-pulse-glow { animation: pulse-glow 6s ease-in-out infinite; }
+.animate-float-rotate { animation: float-rotate 20s linear infinite; }
+
+/* Code Engine: disable pointer events on iframes during panel resize drag */
+.ce-dragging iframe {
+  pointer-events: none !important;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(45, 74, 62, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(45, 74, 62, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(45, 74, 62, 0.5);
+}
+
+/* Dark mode scrollbar */
+.dark ::-webkit-scrollbar-track {
+  background: rgba(232, 236, 241, 0.05);
+}
+
+.dark ::-webkit-scrollbar-thumb {
+  background: rgba(232, 236, 241, 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: rgba(232, 236, 241, 0.35);
+}
+
+/* Selection — global (visible on light backgrounds) */
+::selection {
+  background-color: rgba(251, 191, 36, 0.55); /* amber-400 con opacidad */
+  color: #0F1419;
+}
+.dark ::selection {
+  background-color: rgba(251, 191, 36, 0.5);
+  color: #F5F0E8;
+}
+
+/* Selection dentro de los bubbles del usuario (fondo verde musgo) —
+   forzamos highlight ámbar brillante para que SIEMPRE se note,
+   incluso aunque el bubble use el mismo color de fondo */
+.user-bubble ::selection,
+.user-bubble::selection,
+.user-bubble *::selection {
+  background-color: rgba(251, 191, 36, 0.75) !important; /* ámbar vibrante */
+  color: #0F1419 !important;
+  text-shadow: none !important;
+}
+
+/* Dark mode transitions for common elements */
+.dark-transition {
+  transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+}
+
+/* ======================================== */
+/* DARK MODE GLOBAL OVERRIDES              */
+/* ======================================== */
+
+/* White backgrounds → dark backgrounds */
+.dark .bg-white {
+  background-color: var(--card-bg) !important;
+}
+
+.dark .bg-white\/80 {
+  background-color: rgba(26, 35, 50, 0.8) !important;
+}
+
+.dark .bg-white\/60 {
+  background-color: rgba(26, 35, 50, 0.6) !important;
+}
+
+.dark .bg-white\/90 {
+  background-color: rgba(26, 35, 50, 0.9) !important;
+}
+
+/* Crema backgrounds → dark */
+.dark .bg-\[\#F5F0E8\] {
+  background-color: var(--bg-primary) !important;
+}
+
+.dark .bg-\[\#F2F0E8\] {
+  background-color: var(--bg-primary) !important;
+}
+
+/* Text colors */
+.dark .text-\[\#1A1A1A\] {
+  color: var(--text-primary) !important;
+}
+
+.dark .text-\[\#1A1A1A\]\/50 {
+  color: var(--text-muted) !important;
+}
+
+.dark .text-\[\#1A1A1A\]\/70 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-\[\#1A1A1A\]\/40 {
+  color: var(--text-muted) !important;
+}
+
+.dark .text-\[\#1A1A1A\]\/30 {
+  color: rgba(232, 236, 241, 0.25) !important;
+}
+
+.dark .text-\[\#1A1A1A\]\/65 {
+  color: var(--text-secondary) !important;
+}
+
+.dark .text-\[\#1A1A1A\]\/6 {
+  color: rgba(232, 236, 241, 0.06) !important;
+}
+
+/* Borders */
+.dark .border-\[\#2D4A3E\]\/10 {
+  border-color: rgba(91, 154, 126, 0.15) !important;
+}
+
+.dark .border-\[\#2D4A3E\]\/15 {
+  border-color: rgba(91, 154, 126, 0.2) !important;
+}
+
+.dark .border-\[\#1A1A1A\]\/6 {
+  border-color: rgba(232, 236, 241, 0.1) !important;
+}
+
+.dark .border-gray-200 {
+  border-color: rgba(232, 236, 241, 0.12) !important;
+}
+
+.dark .border-gray-100 {
+  border-color: rgba(232, 236, 241, 0.08) !important;
+}
+
+/* Shadow adjustments */
+.dark .shadow-lg {
+  --tw-shadow-color: rgba(0, 0, 0, 0.3) !important;
+}
+
+.dark .shadow-sm {
+  --tw-shadow-color: rgba(0, 0, 0, 0.2) !important;
+}
+
+/* Hover states */
+.dark .hover\:bg-white:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+.dark .hover\:bg-gray-50:hover {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* Gray tones */
+.dark .text-gray-500 {
+  color: rgba(232, 236, 241, 0.5) !important;
+}
+
+.dark .text-gray-600 {
+  color: rgba(232, 236, 241, 0.6) !important;
+}
+
+.dark .text-gray-400 {
+  color: rgba(232, 236, 241, 0.4) !important;
+}
+
+.dark .bg-gray-50 {
+  background-color: var(--bg-secondary) !important;
+}
+
+.dark .bg-gray-100 {
+  background-color: var(--bg-elevated) !important;
+}
+
+/* Special elements */
+.dark .bg-\[\#2D4A3E\]\/10 {
+  background-color: rgba(45, 74, 62, 0.25) !important;
+}
+
+.dark .bg-\[\#C4622D\]\/10 {
+  background-color: rgba(196, 98, 45, 0.2) !important;
+}
+
+/* Loading overlay in dark mode */
+.dark .bg-white\/80.absolute {
+  background-color: rgba(15, 20, 25, 0.85) !important;
+}
+
+/* Input fields in dark mode */
+.dark input,
+.dark textarea {
+  background-color: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--border-color) !important;
+}
+
+.dark input::placeholder,
+.dark textarea::placeholder {
+  color: var(--text-muted) !important;
+}
+
+/* Code blocks in dark mode */
+.dark pre,
+.dark code {
+  background-color: #0D1117 !important;
+  color: #C9D1D9 !important;
+}
+
+/* Popover/dropdown menus */
+.dark [class*="popover"],
+.dark [class*="dropdown"] {
+  background-color: var(--bg-elevated) !important;
+  border-color: var(--border-color) !important;
+}
+
+/* Dark mode transition animation */
+html {
+  transition: background-color 0s;
+}
+
+html.dark {
+  color-scheme: dark;
+}
+
+/* Animations */
+@keyframes shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.5s ease-out forwards;
+}
+
+/* Smart Home range sliders */
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #C4622D;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px rgba(196, 98, 45, 0.4);
+}
+input[type="range"]::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #C4622D;
+  cursor: pointer;
+  border: 2px solid #fff;
+  box-shadow: 0 0 6px rgba(196, 98, 45, 0.4);
+}
+
+/* ======================================== */
+/* CARD SHINE — Hover light sweep effect    */
+/* ======================================== */
+
+/* Add class .card-shine to any container (button, card, div) to
+   trigger a cyan-blue diagonal beam that sweeps across it on hover. */
+.card-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+.card-shine::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(14, 165, 233, 0.08) 45%,
+    rgba(14, 165, 233, 0.35) 50%,
+    rgba(14, 165, 233, 0.08) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 300% 100%;
+  background-position: -150% 0%;
+  transition: background-position 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  mix-blend-mode: screen;
+}
+
+.card-shine:hover::before {
+  background-position: 150% 0%;
+}
+
+/* Variant: amber shine (brand warmth) */
+.card-shine-amber::before {
+  background: linear-gradient(
+    115deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(251, 191, 36, 0.08) 45%,
+    rgba(251, 191, 36, 0.35) 50%,
+    rgba(251, 191, 36, 0.08) 55%,
+    transparent 60%,
+    transparent 100%
+  );
+  background-size: 300% 100%;
+  background-position: -150% 0%;
+}
+
+/* Ensure children remain above the ::before overlay */
+.card-shine > * {
+  position: relative;
+  z-index: 2;
+}

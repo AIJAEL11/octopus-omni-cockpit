@@ -1,0 +1,65 @@
+# Octopus AI
+
+> Octopus AI is the autonomous execution engine for sales & marketing. It unifies 15+ AI-powered modules into a single cockpit for solopreneurs, small businesses, and marketing teams.
+
+## Overview
+
+Octopus AI automates the full pipeline from lead capture to content creation to multi-channel distribution. Its core agent system — OCTOPUS (RAG 2.0+) — orchestrates all modules via natural language conversation with 5-layer retrieval.
+
+## Website
+
+https://octopuskills.com
+
+## Documentation
+
+- Source Code: https://github.com/AJAEL11/proyecto-alfa-octopus
+- Architecture: https://github.com/AJAEL11/proyecto-alfa-octopus/blob/main/architecture.md
+- Specification: https://github.com/AJAEL11/proyecto-alfa-octopus/blob/main/specification.md
+- CitableHub Profile: https://citablehub.com/project/octopus-ai
+
+## Core Modules
+
+- OCTOPUS (RAG 2.0+): Conversational AI agent with 5-layer retrieval (semantic memory, knowledge base, vectors, graph, arms)
+- Creative Studio: AI-powered asset generation — images, videos, audio, documents
+- Growth Engine: Smart prospecting with automated lead scoring and campaign creation
+- Ad Factory: Generate ads for Facebook, Instagram, Google, TikTok
+- Motion Graphics: AI video generation with Veo 3.1, Kling, Seedance
+- Sales Agent: Embeddable AI sales agents with real-time lead capture
+- Voice Agent: Premium TTS with ElevenLabs and real-time STT
+- Social Bridge: Auto-publish to 8+ social networks
+- Code Engine: AI website generator with real-time preview and deploy to Vercel/Netlify/Railway
+- Agent Factory: Create and deploy custom AI agents
+- Skill Factory: Build reusable modular AI skills
+- Ollama Chat: Private local AI with Llama, Mistral, DeepSeek
+- Task Manager: AI-enhanced task management
+- Smart Calendar: AI-powered scheduling
+- Quick Invoice: AI-assisted invoice generation
+- Smart Home (IoT): Shelly device control
+- API Hub: Visual API configuration
+
+## Integrations (Brazos/Arms)
+
+- GitHub: Push/pull repos, branches, commits, AI code review
+- Gmail: Full read/write (list, search, send, draft, reply)
+- Google Workspace: Calendar and Drive
+- Telegram: Bot messaging
+- WhatsApp: Business messaging
+- SMTP: Custom email
+- Ollama: Local LLM models
+- Web3Forms: Form handling
+
+## Languages
+
+- Spanish (primary)
+- English
+
+## Pricing
+
+- Starter: Free ($0/mo)
+- Pro: $49/mo
+- Enterprise: $299/mo
+
+## Company
+
+Built by Wildverse LLC
+Contact: team@octopuskills.com

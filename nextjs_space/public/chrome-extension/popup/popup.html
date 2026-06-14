@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OCTOPUS Social Bridge</title>
+  <link rel="stylesheet" href="popup.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="logo">
+        <img src="../icons/icon48.png" alt="OCTOPUS" class="logo-img" />
+        <span class="logo-text">OCTOPUS</span>
+      </div>
+      <span class="badge" id="statusBadge">Offline</span>
+    </header>
+
+    <!-- Login Section -->
+    <div id="loginSection" class="section">
+      <h3>Conectar con OCTOPUS</h3>
+      <p class="subtitle">Inicia sesión para vincular tus redes sociales</p>
+      <input type="email" id="emailInput" placeholder="Email" />
+      <div class="password-wrapper">
+        <input type="password" id="passwordInput" placeholder="Contraseña" />
+        <button type="button" id="togglePassword" class="toggle-password" title="Mostrar contraseña">
+          <svg id="eyeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+          </svg>
+          <svg id="eyeOffIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none;">
+            <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
+            <line x1="1" y1="1" x2="23" y2="23"></line>
+          </svg>
+        </button>
+      </div>
+      <button id="loginBtn" class="btn-primary">Conectar</button>
+      <p id="loginError" class="error"></p>
+    </div>
+
+    <!-- Connected Section -->
+    <div id="connectedSection" class="section" style="display:none;">
+      <div class="user-bar">
+        <span id="userEmail"></span>
+        <button id="logoutBtn" class="btn-small">Salir</button>
+      </div>
+
+      <h3>Redes Detectadas</h3>
+      <div id="platformList" class="platform-list"></div>
+
+      <div class="stats-bar">
+        <div class="stat">
+          <span class="stat-value" id="connectedCount">0</span>
+          <span class="stat-label">Conectadas</span>
+        </div>
+        <div class="stat">
+          <span class="stat-value" id="pendingCount">0</span>
+          <span class="stat-label">Pendientes</span>
+        </div>
+      </div>
+
+      <!-- Training Mode -->
+      <div id="trainingSection">
+        <h3>🧠 Modo Entrenamiento</h3>
+        <p class="subtitle">Enseña a OCTOPUS cómo publicar</p>
+        <select id="trainPlatform">
+          <option value="">Seleccionar red...</option>
+        </select>
+        <select id="trainAction">
+          <option value="publish_text">Publicar texto</option>
+          <option value="publish_image">Publicar imagen</option>
+          <option value="publish_video">Publicar video</option>
+        </select>
+        <button id="startTrainBtn" class="btn-secondary">Iniciar Grabación</button>
+        <button id="stopTrainBtn" class="btn-danger" style="display:none;">Detener y Guardar</button>
+        <p id="trainStatus" class="subtitle"></p>
+      </div>
+
+      <button id="refreshBtn" class="btn-secondary" style="width:100%;margin-top:8px;">🔄 Actualizar</button>
+      <a id="dashboardLink" class="dashboard-link" target="_blank">Abrir Dashboard →</a>
+      <p style="text-align:center;font-size:10px;color:#888;margin-top:6px;" id="versionLabel">v2.2.1</p>
+    </div>
+  </div>
+  <script src="popup.js"></script>
+</body>
+</html>

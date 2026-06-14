@@ -1,0 +1,1872 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/octopus_omni_cockpit/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+  user              User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model AgentLog {
+  id        String   @id @default(cuid())
+  projectId String
+  agentName String
+  agentType String
+  message   String
+  status    String   @default("pending")
+  createdAt DateTime @default(now())
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ApiKey {
+  id          String    @id @default(cuid())
+  userId      String
+  serviceType String
+  name        String
+  apiKey      String
+  baseUrl     String?
+  status      String    @default("inactive")
+  lastTested  DateTime?
+  lastUsed    DateTime?
+  usageCount  Int       @default(0)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, serviceType])
+  @@index([userId])
+}
+
+model ArmConnection {
+  id          String    @id @default(cuid())
+  userId      String
+  armType     String
+  name        String
+  status      String    @default("connected")
+  credentials String
+  connectedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  User        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, armType])
+}
+
+model ArmData {
+  id         String   @id @default(cuid())
+  userId     String
+  armType    String
+  dataType   String
+  title      String
+  content    String
+  metadata   String?
+  externalId String?
+  syncedAt   DateTime @default(now())
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, armType, externalId])
+  @@index([armType])
+  @@index([dataType])
+  @@index([userId])
+}
+
+model ChatMessage {
+  id              String           @id @default(cuid())
+  sessionId       String
+  role            String
+  content         String
+  metadata        String?
+  createdAt       DateTime         @default(now())
+  session     ChatSession      @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  feedback MessageFeedback?
+}
+
+model ChatSession {
+  id          String        @id @default(cuid())
+  userId      String
+  projectId   String?
+  title       String        @default("Nueva conversación")
+  status      String        @default("active")
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  messages ChatMessage[]
+  User        User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model CreativeAsset {
+  id          String   @id @default(cuid())
+  userId      String
+  type        String
+  title       String
+  description String?
+  prompt      String
+  content     String
+  thumbnail   String?
+  platform    String?
+  format      String?
+  status      String   @default("ready")
+  metadata    String?
+  tags        String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  projectId   String?
+  project     Project? @relation(fields: [projectId], references: [id])
+  User        User     @relation(fields: [userId], references: [id])
+
+  @@index([createdAt])
+  @@index([projectId])
+  @@index([status])
+  @@index([type])
+  @@index([userId])
+}
+
+model GraphEntity {
+  id                                                 String          @id @default(cuid())
+  userId                                             String
+  name                                               String
+  entityType                                         String
+  properties                                         String?
+  mentions                                           Int             @default(1)
+  firstSeen                                          DateTime        @default(now())
+  lastSeen                                           DateTime        @default(now())
+  createdAt                                          DateTime        @default(now())
+  updatedAt                                          DateTime        @updatedAt
+  objectRelations  GraphRelation[] @relation("GraphRelation_objectIdToGraphEntity")
+  subjectRelations GraphRelation[] @relation("GraphRelation_subjectIdToGraphEntity")
+
+  @@unique([userId, name, entityType])
+  @@index([entityType])
+  @@index([name])
+  @@index([userId])
+}
+
+model GraphRelation {
+  id                                               String      @id @default(cuid())
+  userId                                           String
+  subjectId                                        String
+  predicate                                        String
+  objectId                                         String
+  weight                                           Float       @default(1.0)
+  source                                           String?
+  context                                          String?
+  createdAt                                        DateTime    @default(now())
+  updatedAt                                        DateTime    @updatedAt
+  object  GraphEntity @relation("GraphRelation_objectIdToGraphEntity", fields: [objectId], references: [id], onDelete: Cascade)
+  subject GraphEntity @relation("GraphRelation_subjectIdToGraphEntity", fields: [subjectId], references: [id], onDelete: Cascade)
+
+  @@index([objectId])
+  @@index([predicate])
+  @@index([subjectId])
+  @@index([userId])
+}
+
+model GrowthAction {
+  id          String      @id @default(cuid())
+  userId      String
+  leadId      String?
+  actionType  String
+  title       String
+  description String?
+  payload     String?
+  reasoning   String?
+  status      String      @default("pending")
+  executedAt  DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  lead  GrowthLead? @relation(fields: [leadId], references: [id])
+  User        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([actionType])
+  @@index([createdAt])
+  @@index([leadId])
+  @@index([status])
+  @@index([userId])
+}
+
+model GrowthInsight {
+  id          String   @id @default(cuid())
+  userId      String
+  insightType String
+  title       String
+  description String
+  data        String?
+  score       Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([insightType])
+  @@index([userId])
+}
+
+model GrowthLead {
+  id                  String          @id @default(cuid())
+  userId              String
+  businessName        String
+  businessType        String?
+  contactName         String?
+  email               String?
+  emailCategory       String?
+  phone               String?
+  website             String?
+  city                String?
+  state               String?
+  country             String?         @default("US")
+  googleRating        Float?
+  status              String          @default("new")
+  priority            String          @default("medium")
+  qualificationScore  Int             @default(0)
+  leadTier            String          @default("diamond")
+  leadSource          String?
+  painPoints          String?
+  notes               String?
+  tags                String?                        // JSON array of tags e.g. ["blog-lead","wildverse"]
+  sourceUrl           String?                        // URL that originated the lead (e.g. blog article)
+  followUpCount       Int             @default(0)
+  lastContactedAt     DateTime?
+  lastFollowUpAt      DateTime?
+  emailBounced        Boolean         @default(false)
+  createdAt           DateTime        @default(now())
+  updatedAt           DateTime        @updatedAt
+  lastReplyAt         DateTime?
+  replyClassification String?
+  actions        GrowthAction[]
+  User                User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages       GrowthMessage[]
+  campaignLeads  CampaignLead[]
+
+  @@index([city])
+  @@index([emailCategory])
+  @@index([leadTier])
+  @@index([qualificationScore])
+  @@index([status])
+  @@index([userId])
+}
+
+model GrowthMessage {
+  id          String     @id @default(cuid())
+  userId      String
+  leadId      String
+  direction   String
+  channel     String     @default("email")
+  subject     String?
+  content     String
+  metadata    String?
+  trackingId  String?    @unique
+  openedAt    DateTime?
+  openCount   Int        @default(0)
+  createdAt   DateTime   @default(now())
+  lead GrowthLead @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  User       User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([createdAt])
+  @@index([direction])
+  @@index([leadId])
+  @@index([userId])
+  @@index([trackingId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CAMPAIGN SYSTEM - Campañas reales de Growth Engine
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Campaign {
+  id              String          @id @default(cuid())
+  userId          String
+  name            String
+  description     String?         @db.Text
+  campaignType    String          @default("outreach")  // outreach, seasonal, nurture, reactivation, custom
+  status          String          @default("draft")      // draft, active, paused, completed, archived
+  targetCriteria  String?         @db.Text               // JSON: { businessType, city, leadTier, minScore }
+  emailSubject    String?
+  emailTemplate   String?         @db.Text
+  sequence        String?         @db.Text               // JSON array of email steps for multi-touch
+  totalLeads      Int             @default(0)
+  sentCount       Int             @default(0)
+  openCount       Int             @default(0)
+  replyCount      Int             @default(0)
+  convertedCount  Int             @default(0)
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+  User            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leads           CampaignLead[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([campaignType])
+  @@index([createdAt])
+}
+
+model CampaignLead {
+  id          String      @id @default(cuid())
+  campaignId  String
+  leadId      String
+  status      String      @default("pending")  // pending, sent, opened, replied, converted, bounced
+  currentStep Int         @default(0)            // which step of the drip sequence (0 = not started)
+  lastStepAt  DateTime?                          // when the last step was sent
+  sentAt      DateTime?
+  openedAt    DateTime?
+  repliedAt   DateTime?
+  createdAt   DateTime    @default(now())
+  campaign    Campaign    @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  lead        GrowthLead  @relation(fields: [leadId], references: [id], onDelete: Cascade)
+
+  @@unique([campaignId, leadId])
+  @@index([campaignId])
+  @@index([leadId])
+  @@index([status])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MEGA SKILL: LEAD-TO-ASSET — Motor de ejecución principal
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model LeadAssetProcess {
+  id              String    @id @default(cuid())
+  userId          String
+  leadId          String?
+  leadName        String
+  leadEmail       String?
+  leadCompany     String?
+  leadMetadata    String?                          // JSON: campos custom del lead
+  assetType       String    @default("video")      // video, image, audio, document
+  assetUrl        String?                          // URL del asset generado
+  assetId         String?                          // ref a CreativeAsset si se guarda
+  status          String    @default("pending")    // pending, creating_lead, generating_asset, sending_email, completed, error
+  stage           String    @default("queued")     // sub-estado descriptivo
+  progress        Int       @default(0)            // 0-100
+  sendEmail       Boolean   @default(false)
+  emailSent       Boolean   @default(false)
+  emailTemplateId String?
+  language        String    @default("es")
+  projectName     String?
+  errorMessage    String?
+  metadata        String?                          // JSON: utm, template, config extra
+  startedAt       DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  User            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([leadId])
+  @@index([createdAt])
+}
+
+model KnowledgeChunk {
+  id                String            @id @default(cuid())
+  documentId        String
+  content           String
+  position          Int
+  relevanceScore    Float             @default(0.5)
+  createdAt         DateTime          @default(now())
+  KnowledgeDocument KnowledgeDocument @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@index([documentId])
+}
+
+model KnowledgeDocument {
+  id             String           @id @default(cuid())
+  userId         String
+  title          String
+  content        String
+  contentType    String
+  summary        String?
+  keywords       String[]
+  queryCount     Int              @default(0)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  chunks KnowledgeChunk[]
+
+  @@index([userId])
+}
+
+model KnowledgeEntry {
+  id          String   @id @default(cuid())
+  type        String
+  title       String
+  content     String
+  tags        String[]
+  embedding   String?
+  useCount    Int      @default(0)
+  successRate Float    @default(0.5)
+  source      String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([type])
+}
+
+model LearningPattern {
+  id           String   @id @default(cuid())
+  projectType  String
+  userIntent   String
+  solution     String
+  sections     String[]
+  codeSnippets String?
+  feedback     Int      @default(0)
+  timesUsed    Int      @default(1)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([projectType])
+}
+
+model MessageFeedback {
+  id          String      @id @default(cuid())
+  messageId   String      @unique
+  rating      Int
+  comment     String?
+  createdAt   DateTime    @default(now())
+  message ChatMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+}
+
+model OnboardingData {
+  id          String   @id @default(cuid())
+  userId      String   @unique
+  projectName String
+  projectType String
+  objective   String
+  completed   Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  User        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id            String          @id @default(cuid())
+  userId        String
+  name          String
+  description   String?
+  projectType   String
+  status        String          @default("draft")
+  progress      Int             @default(0)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  agentLogs      AgentLog[]
+  creativeAssets CreativeAsset[]
+  User          User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files   ProjectFile[]
+  memory ProjectMemory?
+}
+
+model ProjectFile {
+  id        String   @id @default(cuid())
+  projectId String
+  name      String
+  path      String
+  content   String?
+  fileType  String
+  agentId   String?
+  createdAt DateTime @default(now())
+  Project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model ProjectMemory {
+  id           String   @id @default(cuid())
+  projectId    String   @unique
+  summary      String
+  keyFeatures  String[]
+  designSystem String?
+  successScore Int      @default(0)
+  createdAt    DateTime @default(now())
+  project      Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+}
+
+model QueryHistory {
+  id          String   @id @default(cuid())
+  userId      String
+  query       String
+  context     String?
+  resultsUsed String[]
+  wasHelpful  Boolean?
+  createdAt   DateTime @default(now())
+
+  @@index([userId])
+}
+
+model SemanticMemory {
+  id         String   @id @default(cuid())
+  userId     String
+  category   String
+  subject    String
+  predicate  String
+  object     String
+  confidence Float    @default(0.8)
+  source     String?
+  lastUsed   DateTime @default(now())
+  useCount   Int      @default(1)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([category])
+  @@index([subject])
+  @@index([userId])
+}
+
+model SemanticVector {
+  id         String   @id @default(cuid())
+  userId     String
+  sourceType String
+  sourceId   String
+  text       String
+  vector     String
+  norm       Float    @default(0)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([sourceId])
+  @@index([sourceType])
+  @@index([userId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+  User         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model User {
+  id                String          @id @default(cuid())
+  name              String?
+  email             String          @unique
+  emailVerified     DateTime?
+  image             String?
+  password          String?
+  createdAt         DateTime        @default(now())
+  updatedAt         DateTime        @updatedAt
+  turboEnabled      Boolean         @default(false)
+  turboModel        String?
+  turboProvider     String?
+  elevenLabsKey     String?
+  elevenLabsVoiceId String?
+  elevenLabsEnabled Boolean         @default(true)
+  stripeCustomerId  String?         @unique
+  planId              String          @default("starter")
+  planPeriod          String          @default("monthly")
+  dataExportPurchased Boolean         @default(false)
+  tourCompleted       Boolean         @default(false)
+  promoTrialEndsAt    DateTime?
+  promoSource         String?
+  brazosUnlimitedUntil DateTime?
+  accounts          Account[]
+  ApiKey            ApiKey[]
+  ArmConnection     ArmConnection[]
+  ChatSession       ChatSession[]
+  CreativeAsset     CreativeAsset[]
+  actions           GrowthAction[]
+  GrowthInsight     GrowthInsight[]
+  GrowthLead        GrowthLead[]
+  messages          GrowthMessage[]
+  OnboardingData    OnboardingData?
+  Project           Project[]
+  Session           Session[]
+  SmartCommand      SmartCommand[]
+  SmartDevice       SmartDevice[]
+  SmartScene        SmartScene[]
+  Subscription      Subscription?
+  shellyCloudServer String?
+  shellyAuthKey     String?
+  businessEmail     String?
+  resetToken        String?
+  resetTokenExpiry  DateTime?
+  onboardedAt         DateTime?
+  lastReactivationAt  DateTime?
+  reactivationTemplate String?
+  showWatermark     Boolean         @default(true)
+  SalesAgent        SalesAgent[]
+  SalesAgentLead    SalesAgentLead[]
+  CalendarEvent     CalendarEvent[]
+  BookingConfig     BookingConfig?
+  Invoice           Invoice[]
+  SocialConnection  SocialConnection[]
+  SocialPost        SocialPost[]
+  ExtensionSession  ExtensionSession?
+  Workspace         Workspace[]
+  activeWorkspaceId String?
+  Review            Review[]
+  Campaign          Campaign[]
+  LeadAssetProcess  LeadAssetProcess[]
+  OllamaChatSession OllamaChatSession[]
+  CodeSession       CodeSession[]
+  SessionMemory     SessionMemory[]
+  WorkspaceIndex    WorkspaceIndex?
+  FileChangeEvent   FileChangeEvent[]
+  SkillExecution    SkillExecution[]
+  ContentPublishLog ContentPublishLog[]
+  HostedSite        HostedSite[]
+  ConsciousnessState ConsciousnessState?
+  NexusProject       NexusProject[]
+  VoiceAgent         VoiceAgent[]
+  TaskItem           TaskItem[]
+  BrowserSession     BrowserSession[]
+  BrowserCommand     BrowserCommand[]
+  BrowserTemplate    BrowserTemplate[]
+  ScheduledBrowserTask ScheduledBrowserTask[]
+  CustomAgent        CustomAgent[]
+  CustomSkill        CustomSkill[]
+  CustomMcp          CustomMcp[]
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CUSTOM AGENTS (Agent Factory) - Per-user isolated agents
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CustomAgent {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?  @db.Text
+  model             String   @default("gpt-4.1")
+  category          String   @default("custom")
+  systemPrompt      String   @db.Text
+  isActive          Boolean  @default(true)
+  icon              String?  @default("🤖")
+  temperature       Float    @default(0.7)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+  @@index([userId, isActive])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CUSTOM SKILLS (Skill Factory) - Per-user isolated skills
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CustomSkill {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?  @db.Text
+  category          String   @default("custom")
+  code              String?  @db.Text
+  usageCount        Int      @default(0)
+  isActive          Boolean  @default(true)
+  createdBy         String?  @default("jarvis")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CUSTOM MCP SERVERS (MCP Factory) - Per-user isolated MCP connections
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CustomMcp {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name              String
+  description       String?  @db.Text
+  category          String   @default("custom")
+  icon              String?  @default("Plug")
+  color             String?  @default("#6366F1")
+  endpoint          String?  @db.Text
+  apiKey            String?  @db.Text
+  isConnected       Boolean  @default(false)
+  capabilities      String[] @default([])
+  version           String?  @default("1.0.0")
+  lastSync          DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@index([userId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// MULTI-WORKSPACE SYSTEM - Para agencias y múltiples marcas
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Workspace {
+  id                String    @id @default(cuid())
+  userId            String
+  name              String
+  slug              String?
+  logo              String?
+  description       String?
+  
+  // Branding
+  primaryColor      String    @default("#FFD700")
+  secondaryColor    String    @default("#1a1a2e")
+  accentColor       String?
+  brandVoice        String?   @db.Text  // Tono de voz para contenido
+  
+  // LinkedIn OAuth (por workspace)
+  linkedinAccessToken   String?   @db.Text
+  linkedinRefreshToken  String?   @db.Text
+  linkedinTokenExpiry   DateTime?
+  linkedinUserId        String?
+  linkedinUsername      String?
+  linkedinProfileUrl    String?
+  linkedinProfileImage  String?
+  
+  // Twitter OAuth (futuro)
+  twitterAccessToken    String?   @db.Text
+  twitterRefreshToken   String?   @db.Text
+  twitterTokenExpiry    DateTime?
+  twitterUserId         String?
+  twitterUsername       String?
+  
+  // Instagram (futuro)
+  instagramAccessToken  String?   @db.Text
+  instagramUserId       String?
+  instagramUsername     String?
+  
+  // UGC Config
+  defaultAvatarId       String?
+  defaultVoiceId        String?
+  
+  // Metadata
+  isDefault         Boolean   @default(false)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  // Relations
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  socialConnections SocialConnection[]
+  socialPosts       SocialPost[]
+  
+  @@unique([userId, slug])
+  @@index([userId])
+}
+
+model Subscription {
+  id                     String    @id @default(cuid())
+  userId                 String    @unique
+  stripeSubscriptionId   String    @unique
+  stripePriceId          String
+  stripeCurrentPeriodEnd DateTime
+  status                 String    @default("active")
+  cancelAtPeriodEnd      Boolean   @default(false)
+  trialEnd               DateTime?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  user                   User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SmartDevice {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  type        String   @default("relay")
+  platform    String   @default("wiz")
+  externalId  String?
+  shellyId    String?
+  ipAddress   String?
+  macAddress  String?
+  room        String?
+  icon        String   @default("lightbulb")
+  isOnline    Boolean  @default(false)
+  lastState   Json?
+  mode        String   @default("cloud")
+  brightness  Int      @default(100)
+  colorTemp   Int      @default(4000)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  commands    SmartCommand[]
+
+  @@index([userId])
+}
+
+model SmartCommand {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  deviceId  String
+  device    SmartDevice @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  action    String
+  params    Json?
+  status    String   @default("pending")
+  result    Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([deviceId])
+}
+
+model SmartScene {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  icon        String   @default("play")
+  commands    Json
+  voiceTrigger String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SalesAgent {
+  id            String   @id @default(cuid())
+  userId        String
+  user          User     @relation(fields: [userId], references: [id])
+  name          String
+  productName   String
+  productDesc   String   @db.Text
+  productPrice  String?
+  purchaseLink  String?
+  brandVoice    String?  @db.Text
+  greeting      String?  @db.Text
+  objections    String?  @db.Text
+  // --- ELITE CONTEXT FIELDS ---
+  targetAudience String? @db.Text   // Quién es el comprador ideal
+  keyBenefits    String? @db.Text   // Beneficios clave del producto (bullet points)
+  faq            String? @db.Text   // Preguntas frecuentes + respuestas
+  socialProof    String? @db.Text   // Testimonios, resultados, casos de éxito
+  guarantee      String? @db.Text   // Garantía, política de devolución
+  urgencyTriggers String? @db.Text  // Escasez, bonos limitados, deadline
+  closingStyle   String? @db.Text   // Estilo de cierre: suave, directo, consultivo
+  agentLanguage  String?  @default("auto") // auto, es, en, pt
+  maxDiscount    String?             // Descuento máximo que puede ofrecer
+  competitorInfo String? @db.Text   // Info de competencia para diferenciarse
+  accentColor   String   @default("#C4622D")
+  logoUrl       String?
+  isActive      Boolean  @default(true)
+  conversations Int      @default(0)
+  conversions   Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  chatLogs      SalesChat[]
+  leads         SalesAgentLead[]
+
+  @@index([userId])
+}
+
+model SalesChat {
+  id           String   @id @default(cuid())
+  agentId      String
+  agent        SalesAgent @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  visitorId    String
+  visitorName  String?
+  visitorEmail String?
+  messages     Json     @default("[]")
+  status       String   @default("active")
+  convertedAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([agentId])
+  @@index([visitorId])
+}
+
+model VoiceAgent {
+  id              String   @id @default(cuid())
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentName       String
+  systemPrompt    String   @db.Text
+  model           String   @default("gpt-4.1")
+  temperature     Float    @default(0.7)
+  ttsTier         String   @default("free")
+  ttsVoice        String   @default("es-ES")
+  accentColor     String   @default("#C4622D")
+  greeting        String   @default("¡Hola! ¿En qué puedo ayudarte hoy?")
+  language        String   @default("es")
+  openRouterKey   String?
+  elevenLabsKey   String?
+  elevenLabsVoiceId String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([userId])
+}
+
+model SalesAgentLead {
+  id            String      @id @default(cuid())
+  userId        String
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  agentId       String
+  agent         SalesAgent  @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  visitorId     String
+  // Contact info captured from chat
+  visitorName   String?
+  visitorEmail  String?
+  visitorPhone  String?
+  // Source tracking
+  source        String      @default("direct")  // direct, facebook, google, linkedin, tiktok, instagram, email, referral
+  medium        String?     // cpc, organic, social, email
+  campaign      String?     // UTM campaign name
+  adPlatform    String?     // facebook_ads, google_ads, linkedin_ads, tiktok_ads
+  adId          String?     // Specific ad ID
+  adSetId       String?     // Ad set / ad group ID
+  landingPage   String?     // URL where widget was embedded
+  // Sales context
+  productName   String?
+  productPrice  String?
+  chatSummary   String?     @db.Text  // AI-generated summary of the conversation
+  buyingSignal  String?     // hot, warm, cold
+  messageCount  Int         @default(0)
+  // Status
+  status        String      @default("new")  // new, contacted, converted, lost
+  convertedAt   DateTime?
+  notes         String?     @db.Text
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([agentId])
+  @@index([source])
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+model CalendarEvent {
+  id            String    @id @default(cuid())
+  userId        String
+  title         String
+  description   String?   @db.Text
+  startTime     DateTime
+  endTime       DateTime
+  allDay        Boolean   @default(false)
+  location      String?
+  color         String?   @default("#C4622D")
+  type          String    @default("meeting")
+  status        String    @default("confirmed")
+  leadId        String?
+  leadName      String?
+  leadEmail     String?
+  isBooking     Boolean   @default(false)
+  bookingNotes  String?   @db.Text
+  reminder      Int?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([startTime])
+  @@index([userId, startTime])
+}
+
+model BookingConfig {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  enabled         Boolean  @default(true)
+  slug            String   @unique
+  title           String   @default("Agenda una Reunión")
+  description     String?  @db.Text
+  duration        Int      @default(30)
+  bufferTime      Int      @default(15)
+  availableDays   String   @default("1,2,3,4,5")
+  startHour       Int      @default(9)
+  endHour         Int      @default(17)
+  timezone        String   @default("America/New_York")
+  brandColor      String   @default("#C4622D")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id              String    @id @default(cuid())
+  userId          String
+  invoiceNumber   String
+  type            String    @default("invoice") // invoice | quote
+  status          String    @default("draft")   // draft | sent | viewed | paid | cancelled
+  
+  // Client info
+  clientName      String
+  clientEmail     String?
+  clientPhone     String?
+  clientCompany   String?
+  clientAddress   String?   @db.Text
+
+  // Lead reference (optional)
+  leadId          String?
+  leadSource      String?   // growth | sales_agent
+
+  // Amounts
+  subtotal        Float     @default(0)
+  taxRate         Float     @default(0)
+  taxAmount       Float     @default(0)
+  discount        Float     @default(0)
+  total           Float     @default(0)
+  currency        String    @default("USD")
+
+  // Dates
+  issueDate       DateTime  @default(now())
+  dueDate         DateTime?
+  paidAt          DateTime?
+  viewedAt        DateTime?
+  sentAt          DateTime?
+
+  // Branding
+  notes           String?   @db.Text
+  terms           String?   @db.Text
+  brandColor      String    @default("#C4622D")
+  logoUrl         String?
+
+  items           InvoiceItem[]
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status])
+  @@index([invoiceNumber])
+}
+
+model InvoiceItem {
+  id          String  @id @default(cuid())
+  invoiceId   String
+  description String
+  quantity    Float   @default(1)
+  unitPrice   Float   @default(0)
+  total       Float   @default(0)
+  sortOrder   Int     @default(0)
+
+  invoice     Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+
+  @@index([invoiceId])
+}
+
+// ═══════════════════════════════════════════════════════════
+// SOCIAL BRIDGE — Chrome Extension Integration
+// ═══════════════════════════════════════════════════════════
+
+model SocialConnection {
+  id            String    @id @default(cuid())
+  userId        String
+  workspaceId   String?   // Multi-workspace support
+  platform      String    // twitter, instagram, facebook, linkedin, tiktok, pinterest, threads, youtube
+  username      String?
+  isConnected   Boolean   @default(false)
+  lastSeen      DateTime?
+  capabilities  String?   @db.Text  // JSON: ["post","reply","like","dm"]
+  // OAuth fields for API-based publishing
+  accessToken   String?   @db.Text
+  refreshToken  String?   @db.Text
+  tokenExpiry   DateTime?
+  platformUserId String?  // e.g. LinkedIn person URN
+  profileUrl    String?
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace     Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@unique([userId, platform])
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+model SocialPost {
+  id              String    @id @default(cuid())
+  userId          String
+  workspaceId     String?   // Multi-workspace support
+  platform        String
+  content         String    @db.Text
+  mediaUrl        String?
+  mediaType       String?   // image, video, carousel
+  status          String    @default("pending") // pending, queued, publishing, published, failed, paused
+  platformPostId  String?
+  platformUrl     String?
+  scheduledFor    DateTime?
+  publishedAt     DateTime?
+  errorMessage    String?   @db.Text
+  source          String?   // ad_factory, growth_engine, ugc_factory, manual, jarvis
+  sourceId        String?
+  retryCount      Int       @default(0)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace       Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([userId, status])
+  @@index([userId, platform])
+  @@index([scheduledFor])
+  @@index([workspaceId])
+}
+
+model ExtensionSession {
+  id                  String    @id @default(cuid())
+  userId              String    @unique
+  isOnline            Boolean   @default(false)
+  lastPing            DateTime?
+  userAgent           String?
+  extensionVersion    String?
+  connectedPlatforms  String?   @db.Text  // JSON array
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TrainingPattern {
+  id            String    @id @default(cuid())
+  userId        String
+  platform      String
+  actionType    String    // publish_text, publish_image, publish_video, reply, like
+  steps         String    @db.Text  // JSON: array of recorded actions
+  version       Int       @default(1)
+  isVerified    Boolean   @default(false)
+  successCount  Int       @default(0)
+  failCount     Int       @default(0)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([userId, platform, actionType])
+  @@index([platform, actionType])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ASK OCTO AI - Knowledge Base & Interaction Tracking
+// ═══════════════════════════════════════════════════════════════════════════
+
+model OctoKnowledge {
+  id          String   @id @default(cuid())
+  category    String   // module, command, error, solution, best_practice, faq
+  module      String?  // jarvis, social_bridge, ugc_factory, creative, growth, etc.
+  title       String
+  content     String   @db.Text
+  keywords    String[] // Para búsqueda
+  examples    String?  @db.Text // JSON: ejemplos de uso
+  relatedIds  String[] // IDs de conocimiento relacionado
+  embedding   Float[]  // Vector embedding for semantic search (1536 dimensions)
+  priority    Int      @default(0) // Mayor = más relevante
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([category])
+  @@index([module])
+  @@index([priority])
+}
+
+model OctoGuideSession {
+  id           String   @id @default(cuid())
+  userId       String
+  currentPage  String?  // URL/ruta actual del usuario
+  currentModule String? // Módulo actual
+  context      String?  @db.Text // JSON: contexto de la sesión
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  
+  messages     OctoGuideMessage[]
+  
+  @@index([userId])
+}
+
+model OctoGuideMessage {
+  id          String   @id @default(cuid())
+  sessionId   String
+  role        String   // user, assistant
+  content     String   @db.Text
+  page        String?  // Página donde se hizo la pregunta
+  module      String?  // Módulo relacionado
+  helpful     Boolean? // Feedback del usuario
+  resolved    Boolean? // Si resolvió la duda
+  metadata    String?  @db.Text // JSON: datos adicionales
+  createdAt   DateTime @default(now())
+  
+  session     OctoGuideSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  
+  @@index([sessionId])
+  @@index([module])
+}
+
+model OctoGuideAnalytics {
+  id            String   @id @default(cuid())
+  module        String
+  question      String   @db.Text
+  wasHelpful    Boolean?
+  wasResolved   Boolean?
+  responseTime  Int?     // milliseconds
+  errorType     String?  // Si hubo error, qué tipo
+  createdAt     DateTime @default(now())
+  
+  @@index([module])
+  @@index([wasHelpful])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// REPUTATION & FEEDBACK SYSTEM
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model Review {
+  id             String   @id @default(cuid())
+  userId         String
+  rating         Int      // 1-5
+  comment        String?  @db.Text
+  featureUsed    String?  // e.g. "audio_factory", "ad_factory", "growth_engine"
+  feedbackType   String?  // "emotion" | "usability" | "results"
+  isPublic       Boolean  @default(false)
+  sentimentScore Float?   // -1.0 to 1.0, computed from rating
+  adminReply     String?  @db.Text
+  adminRepliedAt DateTime?
+  priority       String   @default("normal") // "normal" | "high" | "critical"
+  promoStatus    String?  // "pending" | "generating" | "ready" | "error"
+  promoImageUrl  String?  // Auto-generated social proof ad image
+  promoCopy      String?  @db.Text // Auto-generated LinkedIn copy
+  promoVideoUrl  String?  // Masterized promo video URL
+  promoVoiceUrl  String?  // TTS narration audio URL
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  User           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isPublic, rating])
+  @@index([createdAt])
+  @@index([feedbackType])
+  @@index([priority])
+}
+
+model LandingLead {
+  id        String   @id @default(cuid())
+  email     String
+  source    String   @default("hero") // hero | cta | footer
+  utmSource String?
+  utmMedium String?
+  utmCampaign String?
+  convertedToUser Boolean @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email])
+  @@index([createdAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OLLAMA CHAT — Local LLM relay via Bridge
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model OllamaChatSession {
+  id        String   @id @default(cuid())
+  userId    String
+  model     String   // e.g. "deepseek-r1:32b"
+  title     String   @default("Nueva conversación")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages  OllamaChatMessage[]
+
+  @@index([userId, updatedAt])
+}
+
+model OllamaChatMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // "user" | "assistant" | "system"
+  content   String   @db.Text
+  status    String   @default("completed") // pending | processing | completed | failed
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  session   OllamaChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([sessionId, createdAt])
+  @@index([status])
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CODE ENGINE (Claude Code Arm) — Cloud LLM brain + Local Bridge hands
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model CodeSession {
+  id            String   @id @default(cuid())
+  userId        String
+  model         String   // OpenRouter model id e.g. "anthropic/claude-sonnet-4.6"
+  title         String   @default("New code session")
+  summarized    Boolean  @default(false) // true after SessionMemory generated
+  // ── Token tracking (Fase 4) — uso acumulado y costo estimado de la sesión ──
+  promptTokens     Int    @default(0)
+  completionTokens Int    @default(0)
+  totalTokens      Int    @default(0)
+  estCostUsd       Float  @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  messages      CodeMessage[]
+  commands      BridgeCommand[]
+  sessionMemory SessionMemory?
+
+  @@index([userId, updatedAt])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SESSION MEMORY — Persistent cross-session context for Code Engine
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model SessionMemory {
+  id              String   @id @default(cuid())
+  userId          String
+  sessionId       String   @unique  // one memory per session
+  summary         String   @db.Text // LLM-generated narrative summary
+  filesCreated    String   @db.Text @default("[]")  // JSON array of file paths
+  decisions       String   @db.Text @default("[]")  // JSON array of key technical decisions
+  stackUsed       String   @db.Text @default("[]")  // JSON array of technologies/frameworks
+  userPreferences String   @db.Text @default("[]")  // JSON array of noted preferences
+  tags            String   @db.Text @default("[]")  // JSON array of searchable keywords
+  messageCount    Int      @default(0)
+  commandCount    Int      @default(0)
+  createdAt       DateTime @default(now())
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  session         CodeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+}
+
+model CodeMessage {
+  id        String   @id @default(cuid())
+  sessionId String
+  role      String   // "user" | "assistant" | "system"
+  content   String   @db.Text
+  status    String   @default("completed") // pending | streaming | completed | failed
+  error     String?
+  // ── Token tracking (Fase 4) — uso del turno asociado a este mensaje assistant ──
+  promptTokens     Int @default(0)
+  completionTokens Int @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  session   CodeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  commands  BridgeCommand[]
+
+  @@index([sessionId, createdAt])
+  @@index([status])
+}
+
+model BridgeCommand {
+  id          String   @id @default(cuid())
+  sessionId   String
+  messageId   String?
+  type        String   // "write_file" | "read_file" | "create_dir" | "read_dir" | "execute_cmd" | "delete_file"
+  payload     String   @db.Text     // JSON encoded { path, content, command, args, ... }
+  status      String   @default("pending") // pending | approved | rejected | executing | completed | failed
+  result      String?  @db.Text     // JSON encoded result/output
+  error       String?  @db.Text
+  streamOutput String? @db.Text     // Accumulated stdout/stderr for execute_cmd (terminal streaming)
+  requiresConfirmation Boolean @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  session     CodeSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  message     CodeMessage? @relation(fields: [messageId], references: [id], onDelete: SetNull)
+
+  @@index([sessionId, createdAt])
+  @@index([status, createdAt])
+  @@index([messageId])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// WORKSPACE INTELLIGENCE — File watcher + persistent workspace index
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model WorkspaceIndex {
+  id          String   @id @default(cuid())
+  userId      String
+  fileTree    String   @db.Text      // JSON: full workspace tree snapshot
+  fileCount   Int      @default(0)
+  totalSize   Int      @default(0)   // bytes
+  rootPath    String   @default("")  // workspace root on user's machine
+  lastScanAt  DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId])
+  @@index([userId, updatedAt])
+}
+
+model FileChangeEvent {
+  id          String   @id @default(cuid())
+  userId      String
+  eventType   String   // "create" | "modify" | "delete" | "rename"
+  filePath    String   // relative to workspace
+  fileSize    Int?
+  isDir       Boolean  @default(false)
+  detectedAt  DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, detectedAt])
+  @@index([userId, filePath])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// SKILL MEMORY — Phase B: Persistent execution tracking for Skill Factory
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model SkillExecution {
+  id          String   @id @default(cuid())
+  userId      String
+  skillId     String   // e.g. "image-skill", "game-skill", "code-refiner"
+  method      String   // e.g. "searchImages", "autoInvoke", "analyze"
+  params      String?  @db.Text // JSON stringified params
+  success     Boolean  @default(true)
+  duration    Int      @default(0) // milliseconds
+  resultSize  Int?     // bytes of result data (for analytics)
+  error       String?  @db.Text
+  category    String?  // detected category (coffee, tech, etc.)
+  sessionId   String?  // optional link to CodeSession
+  trigger     String   @default("auto") // "auto" | "manual" | "refine"
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([skillId, createdAt])
+  @@index([skillId, success])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONTENT PUBLISHER — Universal multi-tenant content publishing skill
+// Uses ApiKey table (serviceType: 'content_publisher') for endpoint config
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ContentPublishLog {
+  id            String   @id @default(cuid())
+  userId        String
+  agentId       String?  // which agent triggered (e.g. "vera", "custom-agent")
+  title         String
+  slug          String?
+  publishedUrl  String?  // URL returned by the target API
+  status        String   @default("pending") // pending | publishing | published | failed
+  contentType   String   @default("article") // article | page | post | product
+  payload       String?  @db.Text // JSON stringified payload sent
+  response      String?  @db.Text // JSON stringified response received
+  error         String?  @db.Text
+  duration      Int      @default(0) // milliseconds
+  metadata      String?  @db.Text // JSON: extra data (tags, category, etc.)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@index([userId, status])
+  @@index([status])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// OCTOPUS HOSTING — Sites hosted on octopuskills.com/sites/[slug]
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model HostedSite {
+  id          String   @id @default(cuid())
+  userId      String
+  sessionId   String?  // optional link to CodeSession that originated the site
+  slug        String   @unique // URL-safe slug e.g. "mi-landing-pro"
+  name        String   // display name
+  status       String   @default("active") // active | paused | deleted
+  version      Int      @default(1) // current published version
+  customDomain String?  @unique // e.g. "blog.miempresa.com" — user's custom subdomain
+  domainStatus String?  // pending | verified | error
+  fileCount    Int      @default(0)
+  totalSize    Int      @default(0) // bytes
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  files        HostedSiteFile[]
+  snapshots    HostedSiteSnapshot[]
+  views        HostedSiteView[]
+
+  @@index([userId, updatedAt])
+  @@index([slug])
+  @@index([customDomain])
+}
+
+model HostedSiteSnapshot {
+  id        String   @id @default(cuid())
+  siteId    String
+  version   Int
+  files     String   @db.Text // JSON array of {path, content, mimeType, size}
+  fileCount Int      @default(0)
+  totalSize Int      @default(0)
+  createdAt DateTime @default(now())
+  site      HostedSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, version])
+  @@index([siteId])
+}
+
+model HostedSiteFile {
+  id        String   @id @default(cuid())
+  siteId    String
+  filePath  String   // relative path e.g. "index.html", "css/style.css"
+  content   String   @db.Text // raw file content
+  mimeType  String   @default("text/plain")
+  size      Int      @default(0) // bytes
+  createdAt DateTime @default(now())
+  site      HostedSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@unique([siteId, filePath])
+  @@index([siteId])
+}
+
+model HostedSiteView {
+  id        String   @id @default(cuid())
+  siteId    String
+  path      String   @default("/") // page path within the site
+  referrer  String?  // HTTP referrer
+  userAgent String?  // browser UA string
+  country   String?  // derived from headers if available
+  createdAt DateTime @default(now())
+  site      HostedSite @relation(fields: [siteId], references: [id], onDelete: Cascade)
+
+  @@index([siteId, createdAt])
+  @@index([siteId, path])
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// CONSCIOUSNESS SYSTEM - Persistent consciousness state for OCTOPUS
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model ConsciousnessState {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  // Overall composite level (0-100)
+  overallLevel    Float    @default(75)
+  // Sub-dimensions (0-100 each)
+  operativa       Float    @default(50) // Agent/skill operational efficiency
+  datos           Float    @default(50) // Data richness & knowledge depth
+  predictiva      Float    @default(50) // Pattern recognition & anticipation
+  relacional      Float    @default(50) // Connections, MCPs, Brazos integration
+  // Metadata
+  analysisCount   Int      @default(0)  // Total analyses performed
+  lastInsights    String?  @db.Text     // JSON array of last insights
+  lastThought     String?  @db.Text     // Last JARVIS thought
+  evolutionLog    String?  @db.Text     // JSON array of { date, level, event }
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NEXUS MODELS v1.0
+// Product launch & discovery platform
+// Relation with existing User model via userId String
+// ═══════════════════════════════════════════════════════════════════════════════
+
+enum NexusProjectStatus {
+  PENDING_PAYMENT
+  PENDING_REVIEW
+  APPROVED
+  ACTIVE
+  REJECTED
+  EXHAUSTED
+  PAUSED
+}
+
+enum NexusLaunchStatus {
+  PENDING
+  ACTIVE
+  EXHAUSTED
+  REFUNDED
+  CANCELLED
+}
+
+enum NexusEventType {
+  IMPRESSION
+  CLICK
+  DISMISS
+}
+
+enum NexusGuardianStatus {
+  PENDING
+  APPROVED
+  MANUAL_REVIEW
+  REJECTED
+}
+
+enum NexusBlacklistType {
+  DOMAIN
+  EMAIL
+  ANONYMOUS_ID
+}
+
+enum NexusReportStatus {
+  PENDING
+  REVIEWED
+  DISMISSED
+  ACTION_TAKEN
+}
+
+model NexusProject {
+  id              String             @id @default(cuid())
+  userId          String
+  user            User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name            String
+  description     String             @db.Text
+  url             String
+  imageUrl        String?
+  category        String?
+  tags            String[]           @default([])
+  categoryVector  Float[]            @default([])
+  audienceVector  Float[]            @default([])
+  status          NexusProjectStatus @default(PENDING_PAYMENT)
+  rejectionReason String?
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  approvedAt      DateTime?
+  launchedAt      DateTime?
+  launches        NexusLaunch[]
+  guardianReview  NexusGuardianReview?
+
+  @@map("nexus_projects")
+  @@index([userId])
+  @@index([status])
+}
+
+model NexusLaunch {
+  id              String            @id @default(cuid())
+  projectId       String
+  project         NexusProject      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId          String
+  stripeSessionId String?           @unique
+  stripePaymentId String?           @unique
+  amountPaid      Float             @default(19.99)
+  currency        String            @default("usd")
+  status          NexusLaunchStatus @default(PENDING)
+  impressions     Int               @default(0)
+  clicks          Int               @default(0)
+  reaches         Int               @default(0)
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
+  activatedAt     DateTime?
+  expiresAt       DateTime?
+  events          NexusEvent[]
+
+  @@map("nexus_launches")
+  @@index([projectId])
+  @@index([userId])
+  @@index([status])
+}
+
+model NexusEvent {
+  id          String         @id @default(cuid())
+  launchId    String
+  launch      NexusLaunch    @relation(fields: [launchId], references: [id], onDelete: Cascade)
+  projectId   String
+  anonymousId String
+  eventType   NexusEventType
+  contextUrl  String?
+  createdAt   DateTime       @default(now())
+
+  @@map("nexus_events")
+  @@index([launchId])
+  @@index([projectId])
+  @@index([anonymousId])
+  @@index([createdAt])
+}
+
+model NexusGuardianReview {
+  id             String              @id @default(cuid())
+  projectId      String              @unique
+  project        NexusProject        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  fraudScore     Float               @default(0)
+  spamScore      Float               @default(0)
+  maliciousScore Float               @default(0)
+  overallScore   Float               @default(0)
+  status         NexusGuardianStatus @default(PENDING)
+  flags          String[]            @default([])
+  notes          String?
+  reviewer       String              @default("auto")
+  reviewedAt     DateTime?
+  createdAt      DateTime            @default(now())
+
+  @@map("nexus_guardian_reviews")
+}
+
+model NexusBlacklist {
+  id        String             @id @default(cuid())
+  type      NexusBlacklistType
+  value     String             @unique
+  reason    String?
+  createdAt DateTime           @default(now())
+
+  @@map("nexus_blacklist")
+}
+
+model OctoBlogPost {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  content         String   @db.Text
+  keyword         String?
+  metaDescription String?
+  excerpt         String?
+  coverImage      String?
+  category        String   @default("ai-automation")
+  language        String   @default("en")
+  author          String   @default("Octopus AI")
+  status          String   @default("published")
+  readTime        Int?     @default(10)
+  wordCount       Int?     @default(0)
+  seriesId        String?
+  seriesPosition  Int?
+  seriesTheme     String?
+  views           Int      @default(0)
+  publishedAt     DateTime @default(now())
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@map("octo_blog_posts")
+  @@index([slug])
+  @@index([category])
+  @@index([language])
+  @@index([status])
+  @@index([publishedAt])
+}
+
+model NexusReport {
+  id          String            @id @default(cuid())
+  projectId   String
+  anonymousId String
+  reason      String
+  status      NexusReportStatus @default(PENDING)
+  createdAt   DateTime          @default(now())
+
+  @@map("nexus_reports")
+  @@index([projectId])
+  @@index([status])
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// TASK MANAGER — Gestión de tareas personales
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model TaskItem {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title       String
+  description String?  @db.Text
+  priority    String   @default("medium") // low, medium, high, urgent
+  status      String   @default("pending") // pending, in_progress, completed
+  category    String?  @default("general")
+  dueDate     DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("task_items")
+  @@index([userId])
+  @@index([userId, status])
+  @@index([userId, priority])
+  @@index([dueDate])
+}
+// ═══════════════════════════════════════════════════════════════════════════════
+// BROWSER AUTOMATION — Control remoto de navegador via Bridge
+// ═══════════════════════════════════════════════════════════════════════════════
+
+model BrowserSession {
+  id             String   @id @default(cuid())
+  userId         String
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name           String   @default("New Session")
+  status         String   @default("idle") // idle, running, paused, error, completed
+  currentUrl     String?
+  lastScreenshot String?  @db.Text
+  metadata       Json?
+  commands       BrowserCommand[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("browser_sessions")
+  @@index([userId])
+  @@index([userId, status])
+}
+
+model BrowserTemplate {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name        String
+  description String?  @db.Text
+  steps       Json     // Array of command objects with {{variable}} placeholders
+  variables   Json?    // [{name, label, type, defaultValue}]
+  category    String?  // social_media, scraping, testing, etc.
+  lastUsed    DateTime?
+  useCount    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  scheduledTasks ScheduledBrowserTask[]
+
+  @@map("browser_templates")
+  @@index([userId])
+}
+
+model BrowserCommand {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  sessionId    String
+  session      BrowserSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  type         String   // goto, click, type, screenshot, scroll, wait, extract, evaluate
+  params       Json?
+  status       String   @default("pending") // pending, sent, completed, failed
+  result       Json?
+  screenshotUrl String? @db.Text
+  error        String?  @db.Text
+  duration     Int?     // ms
+  tabId        String?  // tab identifier for multi-tab sessions
+  createdAt    DateTime @default(now())
+  completedAt  DateTime?
+
+  @@map("browser_commands")
+  @@index([sessionId, status])
+  @@index([userId])
+}
+
+model ScheduledBrowserTask {
+  id           String   @id @default(cuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  templateId   String
+  template     BrowserTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  name         String
+  schedule     String   // cron expression or 'once'
+  variables    Json?    // Variable values for the template
+  status       String   @default("active") // active, paused, completed, failed
+  lastRun      DateTime?
+  nextRun      DateTime?
+  runCount     Int      @default(0)
+  lastResult   String?  @db.Text
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("scheduled_browser_tasks")
+  @@index([userId])
+  @@index([status, nextRun])
+}
